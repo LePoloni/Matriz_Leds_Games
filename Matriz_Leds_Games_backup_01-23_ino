@@ -1,29 +1,6 @@
 /*
 Desenvolvida por: Leandro Poloni Dantas
 Data: Janeiro/2023
-Coloção de classes e funções de teste para contrução de jogos usando matrizes 
-de leds criadas a partir de fitas de leds do tipo WS2812B.
-Nesta primeira versão as classes Like_Tetris e Like_Snake foram 
-disponibilizadas.
-Especialmente a classe Like_Tetris foi adapatad da classe criada originalmente 
-em MicroPython pelo autor.
-Ambas as classes herdam a classe NeoPixel e foram testadas na placa Arduino UNO
-e no simulador online Wokwi.
-Uma sérei de funções de teste estão disponíveis para estudo e implementação 
-dos jogos.
-
-Data: Fevereiro/2024
-As classes e projeto principal foram compatibilizados com o simulado SimulIDE.
-Esta versão é compatível com o SimulIDE 1.0.0 (não usa porta serial).
-As classes Like_Tetris e Like_Snake receberam um define USAR_SERIAL que 
-precisa estar ativo para habilitar a porta serial.
-Todos os comandos seriais estão comentados para manter a comaptibilidade com o
-software simulador SimulIDE 1.0.0.
-Foram criados defines para o tipo de interface de teste/gravação que será 
-utilizada. Uso facilita a interface com o joystick.
-Foi criado um define para seleção de uso de fonte de alimentação externa. Seu
-papel é controlar o brilho máximo dos leds e evitar sobrecarga na fonte do
-Arduino.
 
 Referências:
 Neopixel
@@ -35,9 +12,8 @@ Exemplos da bilbioteca: https://wokwi.com/arduino/libraries/Adafruit_NeoPixel
 Tetris online: https://tetris.com/play-tetris
 Projeto em Micropython: https://wokwi.com/projects/353230342736706561
 
-Atenção: Evitar cores muito intensas quando usar apenas a fonte do Arduino!
+Atenção: Evitar cores muito intesas quando usar apenas a fonte do Arduino!
 */
-
 #include <Adafruit_NeoPixel.h>
 //As classes são excludentes
 //#define Like_Tetris
@@ -47,15 +23,6 @@ Atenção: Evitar cores muito intensas quando usar apenas a fonte do Arduino!
   #include "Like_Snake.h"
 #endif
 
-//Escolha uma das interfaces de teste/gravação
-#define PLACA
-//#define WOKWI
-//#define SIMULIDE
-
-//Habilite caso irá trabalhar com fonte externa para alimentar a matriz
-//#define FONTE_EXTERNA
-
-//Constantes
 #define PIN 6
 #define COLUNAS 10
 #define LINHAS  15
@@ -74,13 +41,13 @@ Atenção: Evitar cores muito intensas quando usar apenas a fonte do Arduino!
 #define CIMA      3
 #define BAIXO     4
 
-//Adafruit_NeoPixel nP;
 int move = STOP;
 #ifdef Like_Tetris
   like_tetris tt;
 #else
   like_snake snake;
 #endif
+Adafruit_NeoPixel nP;
 
 void setup() 
 {
@@ -91,57 +58,28 @@ void setup()
   pinMode(botaoDes, INPUT_PULLUP);
   pinMode(botaoSel, INPUT_PULLUP);
   randomSeed(1);
-
-  pinMode(13, OUTPUT);
+  //randomSeed(analogRead(0));
   
   #ifdef Like_Tetris
-    #ifdef PLACA
-      tt = like_tetris(PIN, COLUNAS, LINHAS, T_LINHA_ZIG_ZAG);
-    #else
-      tt = like_tetris(PIN, COLUNAS, LINHAS, T_LINHA);  //Ideal para simulação no Wokwi ou SimulIDE
-    #endif
+    //tt = like_tetris(PIN, COLUNAS, LINHAS, T_LINHA);  //Ideal para simulação no Wokwi
+    tt = like_tetris(PIN, COLUNAS, LINHAS, T_LINHA_ZIG_ZAG);
     //Métodos da classe herdada
     tt.begin();
-    #ifdef FONTE_EXTERNA
-      tt.fill(0x0000FF, 0, 150); //Cor, Primeiro, Quantidade
-      tt.show();
-      delay(1000);
-      tt.limpa_matriz(0xFFFF00);
-    #else
-      tt.fill(0x00000F, 0, 150); //Cor, Primeiro, Quantidade
-      tt.show();
-      delay(1000);
-      tt.limpa_matriz(0x0F0F00);
-    #endif
+    tt.fill(0x00000F, 0, 150); //Cor, Primeiro, Quantidade
+    tt.show();
+    delay(1000);
+    tt.limpa_matriz(0x0F0F00);
     //Método de teste do pino 13
     tt.pisca();
-    //Serial.println("Tetris");
   #else
     //snake = like_snake(); //Padrão
-    #ifdef PLACA
-      snake = like_snake(PIN, COLUNAS, LINHAS, 0xFF0000, 0x00FF00, 0x0000FF, T_LINHA_ZIG_ZAG);  //Customizado
-    #else
-      snake = like_snake(PIN, COLUNAS, LINHAS, 0xFF0000, 0x00FF00, 0x0000FF, T_LINHA);  //Customizado
-    #endif
+    snake = like_snake(PIN, COLUNAS, LINHAS, 0xFF0000, 0x00FF00, 0x0000FF, T_LINHA_ZIG_ZAG);  //Customizado
     snake.begin();
-
-    #ifdef FONTE_EXTERNA
-      snake.fill(0xFF0000, 0, 50);
-      snake.fill(0x00FF00, 50, 50);
-      snake.fill(0x0000FF, 100, 50);
-      snake.show();
-      delay(1000);
-      snake.limpa_matriz(0xFF0000);
-      delay(1000);
-    #else
-      snake.fill(0x0F0000, 0, 50);
-      snake.fill(0x000F00, 50, 50);
-      snake.fill(0x00000F, 100, 50);
-      snake.show();
-      delay(1000);
-      snake.limpa_matriz(0x0F0000);
-      delay(1000);
-    #endif
+    snake.fill(0x00000F, 0, 50);
+    snake.show();
+    delay(1000);
+    snake.limpa_matriz(0x0F0000);
+    delay(1000);
     snake.limpa_matriz(0x000000);
   #endif //Like_Tetris
 }
@@ -175,48 +113,25 @@ void ler_joystick()
 {
   uint16_t x = analogRead(joyHor);
   uint16_t y = analogRead(joyVer);
-
-  #ifdef PLACA
-    if (x > 800)
-        move = DIREITA;   //Joystick
-    else if (x < 200)
-        move = ESQUERDA;  //Joystick
-    else if (y > 800)
-        move = CIMA;      //Joystick e SimulIDE
-    else if (y < 200)
-        move = BAIXO;     //Joystick e SimulIDE
-    //else
-    //    move = STOP;
-  #endif
-  #ifdef WOKWI
-    if (x > 800)
-      move = ESQUERDA;  //Wokwi e SimulIDE
-    else if (x < 200)
-      move = DIREITA;   //Wokwi e SimulIDE
-    else if (y > 800)
-      move = CIMA;      //Joystick e Wokwi
-    else if (y < 200)
-      move = BAIXO;     //Joystick e Wokwi
-    //else
-    //    move = STOP;
-  #endif
-  #ifdef SIMULIDE
-    if (x > 800)
-      move = ESQUERDA;  //Wokwi e SimulIDE
-    else if (x < 200)
-      move = DIREITA;   //Wokwi e SimulIDE
-    else if (y > 800)
-      move = BAIXO;     //Joystick e SimulIDE
-    else if (y < 200)
-      move = CIMA;      //Joystick e SimulIDE
-    //else
-    //    move = STOP;
-  #endif
-
+  
+  if (x > 800)
+      //move = ESQUERDA;  //Wokwi
+      move = DIREITA;   //Joystick
+  else if (x < 200)
+      //move = DIREITA;   //Wokwi
+      move = ESQUERDA;  //Joystick
+  else if (y > 800)
+      move = CIMA;
+  else if (y < 200)
+      move = BAIXO;
+  //else
+  //    move = STOP;
+  
   Serial.print("V = "); Serial.println(y);
   Serial.print("H = "); Serial.println(x);
   Serial.print("M = "); Serial.println(move);
 }
+
 
 #ifdef Like_Tetris  //Testes da biblioteca Like_Tetris
 
@@ -661,66 +576,69 @@ void teste12()
 
   tt.limpa_matriz(cor_fundo);
   
-  #ifdef FONTE_EXTERNA
-    //Com fonte externa (cores intensas)
-    //Pré-ocupa algumas linhas parcialmente
-    bloco = tt.cria_bloco({0,14},0,0xFFFF00);
-    tt.desenha_bloco(bloco);
-    bloco = tt.cria_bloco({0,13},0,0xFFFF00);
-    tt.desenha_bloco(bloco);
-    bloco = tt.cria_bloco({0,12},0,0xFFFF00);
-    tt.desenha_bloco(bloco);
-    bloco = tt.cria_bloco({6,14},0,0xFFFF00);
-    tt.desenha_bloco(bloco);
-    bloco = tt.cria_bloco({6,13},0,0xFFFF00);
-    tt.desenha_bloco(bloco);
-    bloco = tt.cria_bloco({6,12},0,0xFFFF00);
-    tt.desenha_bloco(bloco);
-  #else
-    //Sem fonte externa (cores suaves)
-    //Pré-ocupa algumas linhas parcialmente
-    bloco = tt.cria_bloco({0,14},0,0x4F4F00);
-    tt.desenha_bloco(bloco);
-    bloco = tt.cria_bloco({0,13},0,0x4F4F00);
-    tt.desenha_bloco(bloco);
-    bloco = tt.cria_bloco({0,12},0,0x4F4F00);
-    tt.desenha_bloco(bloco);
-    bloco = tt.cria_bloco({6,14},0,0x4F4F00);
-    tt.desenha_bloco(bloco);
-    bloco = tt.cria_bloco({6,13},0,0x4F4F00);
-    tt.desenha_bloco(bloco);
-    bloco = tt.cria_bloco({6,12},0,0x4F4F00);
-    tt.desenha_bloco(bloco);
-  #endif
+  //Com bateria externa (cores intensas)
+  /*
+  //Pré-ocupa algumas linhas parcialmente
+  bloco = tt.cria_bloco({0,14},0,0xFFFF00);
+  tt.desenha_bloco(bloco);
+  bloco = tt.cria_bloco({0,13},0,0xFFFF00);
+  tt.desenha_bloco(bloco);
+  bloco = tt.cria_bloco({0,12},0,0xFFFF00);
+  tt.desenha_bloco(bloco);
+  bloco = tt.cria_bloco({6,14},0,0xFFFF00);
+  tt.desenha_bloco(bloco);
+  bloco = tt.cria_bloco({6,13},0,0xFFFF00);
+  tt.desenha_bloco(bloco);
+  bloco = tt.cria_bloco({6,12},0,0xFFFF00);
+  tt.desenha_bloco(bloco);
+  //*/
+
+  //Sem bateria externa (cores suaves)
+  //*
+  //Pré-ocupa algumas linhas parcialmente
+  bloco = tt.cria_bloco({0,14},0,0x0F0F00);
+  tt.desenha_bloco(bloco);
+  bloco = tt.cria_bloco({0,13},0,0x0F0F00);
+  tt.desenha_bloco(bloco);
+  bloco = tt.cria_bloco({0,12},0,0x0F0F00);
+  tt.desenha_bloco(bloco);
+  bloco = tt.cria_bloco({6,14},0,0x0F0F00);
+  tt.desenha_bloco(bloco);
+  bloco = tt.cria_bloco({6,13},0,0x0F0F00);
+  tt.desenha_bloco(bloco);
+  bloco = tt.cria_bloco({6,12},0,0x0F0F00);
+  tt.desenha_bloco(bloco);
+  //*/
 
   while (true)
   {
     //0-Sorteia o tipo de bloco e cor
     int tipo = random(0,7); //0..<7
 
-    #ifdef FONTE_EXTERNA
-      //Com fonte externa (cores intensas)
-      uint32_t cvm = random(0,2) * 255; //0..<2
-      uint32_t cvd = random(0,2) * 255; //0..<2
-      uint32_t caz = random(0,2) * 255; //0..<2    
-      if (cvm==0 && cvd==0 && caz==0)
-      {
-          cvm = 255;
-          cvd = 255;
-          caz = 255;
-      }
-    #else
-    //Sem fonte externa (cores suaves)
-      uint32_t cvm = random(0,2) * 0x4F; //0..<2
-      uint32_t cvd = random(0,2) * 0x4F; //0..<2
-      uint32_t caz = random(0,2) * 0x4F; //0..<2    
-      if (cvm==0 && cvd==0 && caz==0)
-      {
-          cvm = 0x4F;
-          cvd = 0x4F;
-          caz = 0x4F;
-      }
-    #endif
+    //Com bateria externa (cores intensas)
+    /*
+    uint32_t cvm = random(0,2) * 255; //0..<2
+    uint32_t cvd = random(0,2) * 255; //0..<2
+    uint32_t caz = random(0,2) * 255; //0..<2    
+    if (cvm==0 && cvd==0 && caz==0)
+    {
+        cvm = 255;
+        cvd = 255;
+        caz = 255;
+    }
+    //*/
+    //Sem bateria externa (cores suaves)
+    //*
+    uint32_t cvm = random(0,2) * 15; //0..<2
+    uint32_t cvd = random(0,2) * 15; //0..<2
+    uint32_t caz = random(0,2) * 15; //0..<2    
+    if (cvm==0 && cvd==0 && caz==0)
+    {
+        cvm = 15;
+        cvd = 15;
+        caz = 15;
+    }
+    //*/
 
     uint32_t cor = (cvm<<16) + (cvd<<8) + (caz<<0);
     //1-Cria um novo bloco
@@ -736,7 +654,6 @@ void teste12()
     {
       tt.desenha_bloco(bloco);
       delay(1000);
-      digitalWrite(13, HIGH);
     }
     else
     {
@@ -749,8 +666,8 @@ void teste12()
     while (estado == true)
     {
       //Debug - mostra o bloca a ser movido
-      //Serial.print("bloco a ser movido");
-      //tt.print_bloco(bloco);
+      Serial.print("bloco a ser movido");
+      tt.print_bloco(bloco);
       
       //Novo movimento
       estado = tt.movimento_completo(bloco, cor_fundo, &bloco);
@@ -761,15 +678,15 @@ void teste12()
       //Testa se o movimento foi possível
       if (estado == false)
       {
-        digitalWrite(13, HIGH);
-        break; //Interrompe o laço
+          break; //Interrompe o laço
       }
 
-      //Testa os botões      
+      //Testa os botões            
+      
       //Botão esquerdo
       if (digitalRead(botaoEsq) == 0)
       {
-        //Serial.println("botaoEsq = 0");
+        Serial.println("botaoEsq = 0");
         //Apaga o bloco
         tt.apaga_bloco(bloco, 0x000000);
         //Desloca
@@ -795,7 +712,7 @@ void teste12()
       //Botão direito
       if (digitalRead(botaoDir) == 0)
       {
-        //Serial.println("botaoDir = 0");
+        Serial.println("botaoDir = 0");
         //Apaga o bloco
         tt.apaga_bloco(bloco, 0x000000);
         //Desloca
@@ -821,7 +738,7 @@ void teste12()
       //Botão de rotação
       if (digitalRead(botaoRot) == 0)
       {
-        //Serial.println("botaoRot = 0");
+        Serial.println("botaoRot = 0");
         //Apaga o bloco
         tt.apaga_bloco(bloco, 0x000000);
         //Rotaciona o bloco
@@ -853,11 +770,8 @@ void teste12()
 void teste13()
 {
   uint32_t cor_fundo = 0x000000;
-  #ifdef FONTE_EXTERNA
-    uint32_t cores[] = {0xFF0000, 0x00FF00, 0x0000FF, 0xFFFFFF};
-  #else
-    uint32_t cores[] = {0x5F0000, 0x005F00, 0x00005F, 0x2F2F2F};
-  #endif
+  uint32_t cores[] = {0x0F0000, 0x000F00, 0x00000F, 0x0F0F0F};
+        
   tt.limpa_matriz(cor_fundo);
 
   uint8_t tam = TAM_P;
@@ -890,8 +804,8 @@ void teste14()
 {
   while (true)
   {
-    //Serial.print("Vertical = "); Serial.println(analogRead(joyVer));
-    //Serial.print("Horizonntal = "); Serial.println(analogRead(joyHor));
+    Serial.print("Vertical = "); Serial.println(analogRead(joyVer));
+    Serial.print("Horizonntal = "); Serial.println(analogRead(joyHor));
     delay(300);
   }
 }
@@ -929,7 +843,7 @@ void teste16()
   snake.show();
   //while(1);
 
-  //Serial.println("**** Início do Jogo *****");
+  Serial.println("**** Início do Jogo *****");
     
   snake.sorteia_pos_fruta();
   snake.sorteia_pos_cobra();
@@ -938,7 +852,7 @@ void teste16()
   while (true)
   {
     ler_joystick();
-    //Serial.print("Move loop = "); Serial.println(move);
+    Serial.print("Move loop = "); Serial.println(move);
 
     //while(1);
     bool dc = snake.desloca_cobra(move);

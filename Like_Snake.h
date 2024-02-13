@@ -5,6 +5,12 @@ Sobre: Classe com métodos customizados para desenvolver um jogo como snake
 usando fitas de led do tipo WS2812B e herda a classe NeoPixel
 Essa classe é uma adapatação da classe criada originalmente em MicroPython
 
+Data: Fevereiro/2024
+Foi introduzido do define USAR_SERIAL que habilita o uso da porta serial
+para envio de mensagens de depuração. Essa modificação foi necessária
+por permitir a simulação no SimulIDE 1.0.0 que não é compatível com o 
+uso da porta serial.
+
 Material de referência:
 https://docs.micropython.org/en/latest/library/neopixel.html
 https://docs.micropython.org/en/latest/esp8266/tutorial/neopixel.html

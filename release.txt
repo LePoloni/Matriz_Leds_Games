@@ -1,0 +1,22 @@
+Desenvolvida por: Leandro Poloni Dantas
+
+Janeiro/2023
+Coloção de classes e funções de teste para contrução de jogos usando matrizes de leds criadas a partir de fitas de leds do tipo WS2812B.
+Nesta primeira versão as classes Like_Tetris e Like_Snake foram disponibilizadas.
+Especialmente a classe Like_Tetris foi adapatad da classe criada originalmente em MicroPython pelo autor.
+Ambas as classes herdam a classe NeoPixel e foram testadas na placa Arduino UNO e no simulador online Wokwi.
+Uma sérei de funções de teste estão disponíveis para estudo e implementação dos jogos.
+
+Fevereiro/2024
+As classes e projeto principal foram compatibilizados com o simulado SimulIDE.
+O simulador SimulIDE 1.0.0 apresenta falha na interface serial.
+Desse forma, o firmware utilizado não deve utilizar a porta serial.
+Para isso, foi criada uma versão do projeto Matriz_Leds_Games.ino
+compatível com essa limitação.
+Nos arquivos das classes Like_Tretis.cpp e Like_Snake.cpp existe um define chamado USA_SERIAL que está desabilitado e inibe qualquer uso da porta serial.
+No arquivo Matriz_Leds_Games.ino todas as funções da serial foram eliminadas ou comentadas.
+Foram criados defines para o tipo de interface de teste/gravação que será 
+utilizada. Uso facilita a interface com o joystick.
+Foi criado um define para seleção de uso de fonte de alimentação externa. Seu
+papel é controlar o brilho máximo dos leds e evitar sobrecarga na fonte do
+Arduino.

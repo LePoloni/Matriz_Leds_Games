@@ -2,8 +2,14 @@
 Desenvolvida por: Leandro Poloni Dantas
 Data: Janeiro/2023
 Sobre: Classe com métodos customizados para desenvolver um jogo como snake
-usando fitas de led do tipo WS2812B e herda a classe NeoPixel
-Essa classe é uma adapatação da classe criada originalmente em MicroPython
+usando fitas de led do tipo WS2812B e herda a classe NeoPixel.
+Essa classe é uma adapatação da classe criada originalmente em MicroPython.
+
+Data: Fevereiro/2024
+Foi introduzido do define USAR_SERIAL que habilita o uso da porta serial
+para envio de mensagens de depuração. Essa modificação foi necessária
+por permitir a simulação no SimulIDE 1.0.0 que não é compatível com o 
+uso da porta serial.
 
 Material de referência:
 https://docs.micropython.org/en/latest/library/neopixel.html
@@ -15,6 +21,7 @@ Snake online: https://playsnake.org/
 */
 
 #include "Like_Snake.h"
+//#define USAR_SERIAL
 
 //Construtor
 like_snake::like_snake(int16_t pino, uint16_t col, uint16_t lin,
@@ -55,8 +62,10 @@ like_snake::like_snake(int16_t pino, uint16_t col, uint16_t lin,
 	//digitalWrite(13, LOW);	
 
 	//Inicializa a serial para debug
+#ifdef USAR_SERIAL
 	Serial.begin(9600);
 	Serial.println("Like Snake!");
+#endif
 }
     
 //Retorna o número do pixel de um ponto
@@ -308,8 +317,9 @@ void like_snake::desenha_fruta(void)
 	setPixelColor(pixel, cor_fruta);
 	//Atuaiza a matriz
 	show();
-
+#ifdef USAR_SERIAL
 	Serial.print("Fruta: "); print_ponto(pos_fruta);
+#endif
 }   
 
 //Desenha a cobra
@@ -330,8 +340,9 @@ void like_snake::desenha_cobra(void)
 	
 	//Atuaiza a matriz
 	show();
-
+#ifdef USAR_SERIAL
 	Serial.print("Cobra: "); print_ponto(pos_cobra.P[0]); print_ponto(pos_cobra.P[tam_cobra-1]);
+#endif
 }
 
 //Sorteia a posição da fruta e desenha
@@ -475,7 +486,9 @@ bool like_snake::desloca_cobra(uint8_t move)
 		}
 		else
 		{
+#ifdef USAR_SERIAL
 			Serial.println("Erro, saiu da tela");
+#endif
 			return false;
 		}
 	}
@@ -488,7 +501,9 @@ bool like_snake::desloca_cobra(uint8_t move)
 		}
 		else
 		{
+#ifdef USAR_SERIAL
 			Serial.println("Erro, saiu da tela");
+#endif
 			return false;
 		}
 	}
@@ -501,7 +516,9 @@ bool like_snake::desloca_cobra(uint8_t move)
 		}
 		else
 		{
+#ifdef USAR_SERIAL
 			Serial.println("Erro, saiu da tela");
+#endif
 			return false;
 		}
 	}
@@ -514,7 +531,9 @@ bool like_snake::desloca_cobra(uint8_t move)
 		}
 		else
 		{
+#ifdef USAR_SERIAL
 			Serial.println("Erro, saiu da tela");
+#endif
 			return false;
 		}
 	}
@@ -527,7 +546,9 @@ bool like_snake::desloca_cobra(uint8_t move)
 	//Serial.print("Cor = "); Serial.println(getPixelColor(pixel));
 	if (getPixelColor(pixel) == cor_cobra)
 	{
+#ifdef USAR_SERIAL
 		Serial.println("Erro, a cobra se mordeu");
+#endif
 		return false;
 	}
   //*/
@@ -588,5 +609,7 @@ void like_snake::cobra_append(t_ponto ponto)
 //Debug: imprime um ponto na serial
 void like_snake::print_ponto(t_ponto ponto)
 {
+#ifdef USAR_SERIAL
   Serial.print("P={"); Serial.print(ponto.x); Serial.print(","); Serial.print(ponto.y);Serial.println("}");
+#endif
 }

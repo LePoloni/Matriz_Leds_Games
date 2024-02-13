@@ -2,8 +2,14 @@
 Desenvolvida por: Leandro Poloni Dantas
 Data: Janeiro/2023
 Sobre: Classe com métodos customizados para desenvolver um jogo como tetris
-usando fitas de led do tipo WS2812B e herda a classe NeoPixel
-Essa classe é uma adapatação da classe criada originalmente em MicroPython
+usando fitas de led do tipo WS2812B e herda a classe NeoPixel.
+Essa classe é uma adapatação da classe criada originalmente em MicroPython.
+
+Data: Fevereiro/2024
+Foi introduzido do define USAR_SERIAL que habilita o uso da porta serial
+para envio de mensagens de depuração. Essa modificação foi necessária
+por permitir a simulação no SimulIDE 1.0.0 que não é compatível com o 
+uso da porta serial.
 
 Material de referência:
 https://docs.micropython.org/en/latest/library/neopixel.html
@@ -15,6 +21,7 @@ Tetris online: https://tetris.com/play-tetris
 */
 
 #include "Like_Tetris.h"
+//#define USAR_SERIAL
 
 //Construtor
 like_tetris::like_tetris(int16_t pino, uint8_t col, uint8_t lin, uint8_t tipo_mat)
@@ -36,8 +43,10 @@ like_tetris::like_tetris(int16_t pino, uint8_t col, uint8_t lin, uint8_t tipo_ma
 	digitalWrite(13, LOW);	
 
 	//Inicializa a serial para debug
+#ifdef USAR_SERIAL
   Serial.begin(9600);
 	Serial.println("Like Tetris!");
+#endif
 }
 
 //Teste
@@ -51,10 +60,11 @@ void like_tetris::pisca()
 	delay(500);
 	digitalWrite(13, LOW);
 	delay(500);
-
+#ifdef USAR_SERIAL
   Serial.print("col="); Serial.println(colunas);
   Serial.print("lin="); Serial.println(linhas);
   Serial.print("tipo_mat=");
+
   switch(tipo_matriz)
   {
     case T_LINHA:           Serial.println("T_LINHA");          break;
@@ -62,6 +72,7 @@ void like_tetris::pisca()
     case T_COLUNA:          Serial.println("T_COLUNA");         break;
     case T_COLUNA_ZIG_ZAG:  Serial.println("T_COLUNA_ZIG_ZAG"); break;
   }
+#endif
 }
 
 //Retorna o número do pixel de um ponto
@@ -697,7 +708,9 @@ bool like_tetris::movimento_completo(t_bloco bloco, uint32_t cor_fundo, t_bloco 
 	    (bloco.P[3].y >= linhas))
 	{
 		//Retorna o bloco original
+#ifdef USAR_SERIAL
 		Serial.println("Ultrapassou a última linha");
+#endif
 		return false;
 	}
 	//Desloca y+1
@@ -717,17 +730,20 @@ bool like_tetris::movimento_completo(t_bloco bloco, uint32_t cor_fundo, t_bloco 
 		//Retorna o estado e o bloco atualizado
 		//Atualiza todos os pixels do bloco_ret com o bloco original
 		*bloco_ret = bloco2;
-
+#ifdef USAR_SERIAL
 		Serial.println("return true");
     Serial.print("bloco_ret.P[0].y="); Serial.println(bloco_ret->P[0].y);
-		return true;
+#endif		
+    return true;
 	}			
 	else
 	{
 		//Desenha bloco1 novamente
 		desenha_bloco(bloco);
 		//Retorna o estado e o bloco original
+#ifdef USAR_SERIAL
     Serial.println("return false");
+#endif
 		return false;
 	}
 }
@@ -905,9 +921,11 @@ void like_tetris::testa_preenchimento_linha(uint32_t cor_fundo)
 	//Varre as linhas da última para primeira
 	int8_t l = linhas - 1;
 	while (l >= 0)
-	{	
+	{
+#ifdef USAR_SERIAL
 		Serial.print(">>>> l = "); Serial.println(l);
-		
+#endif			
+
 		//1-Verifica se a linha está preenchida
 		bool igual = true;
 		for (int c = 0; c < colunas; c++)
@@ -938,9 +956,10 @@ void like_tetris::testa_preenchimento_linha(uint32_t cor_fundo)
 			uint8_t l_igual = l;               
 			//Ajusta todas as linhas anteriores
 			while (l_igual > 0)
-			{				
+			{
+#ifdef USAR_SERIAL			
 				Serial.print(">>>> l_igual = "); Serial.println(l_igual);
-				
+#endif					
 				for (int c = 0; c < colunas; c++)
 				{
 					//Lê a cor da linha anterior
@@ -974,6 +993,7 @@ void like_tetris::testa_preenchimento_linha(uint32_t cor_fundo)
 //Debug: imprime um bloco na serial
 void like_tetris::print_bloco(t_bloco bloco)
 {
+#ifdef USAR_SERIAL
   Serial.print("P[0]="); Serial.print(bloco.P[0].x); Serial.print(","); Serial.println(bloco.P[0].y);
   Serial.print("P[1]="); Serial.print(bloco.P[1].x); Serial.print(","); Serial.println(bloco.P[1].y);
   Serial.print("P[2]="); Serial.print(bloco.P[2].x); Serial.print(","); Serial.println(bloco.P[2].y);
@@ -981,10 +1001,13 @@ void like_tetris::print_bloco(t_bloco bloco)
   Serial.print("cor="); Serial.println(bloco.cor);
   Serial.print("tipo="); Serial.println(bloco.tipo);
   Serial.print("ponto_fixo="); Serial.println(bloco.ponto_fixo);
+#endif
 }
 
 //Debug: imprime um ponto na serial
 void like_tetris::print_ponto(t_ponto ponto)
 {
+#ifdef USAR_SERIAL
   Serial.print("P={"); Serial.print(ponto.x); Serial.print(","); Serial.print(ponto.y);Serial.println("}");
+#endif
 }
